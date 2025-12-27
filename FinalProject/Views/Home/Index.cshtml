@@ -287,6 +287,7 @@
     </div>
 </div>
 
+
 <div class="modal fade" id="signupModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content p-4">
@@ -296,7 +297,12 @@
                     <i class="bi bi-x-lg"></i>
                 </button>
             </div>
-
+            @if (TempData["RegisterError"] != null)
+            {
+                <div class="alert alert-danger">
+                    @TempData["RegisterError"]
+                </div>
+            }
             <form method="post" asp-controller="Account" asp-action="Register">
                 <div class="mb-3">
                     <label>Name</label>
@@ -336,7 +342,12 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        var openRegisterModal = @((ViewBag.OpenRegisterModal != null && (bool)ViewBag.OpenRegisterModal).ToString().ToLower());
+        var openRegisterModal = @((TempData["OpenRegisterModal"] != null).ToString().ToLower());
+
+        if (openRegisterModal) {
+            new bootstrap.Modal(document.getElementById('signupModal')).show();
+        }
+
         var openLoginModal = @((TempData["OpenLoginModal"] != null && (bool)TempData["OpenLoginModal"]).ToString().ToLower());
         if (openRegisterModal) {
             var signupModal = new bootstrap.Modal(document.getElementById('signupModal'));

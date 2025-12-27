@@ -20,44 +20,41 @@ namespace FinalProject.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Register(User user)
         {
-
             if (_context.Users.Any(u => u.Email == user.Email))
             {
-                ModelState.AddModelError("Email", "This email is already registered.");
-                ViewBag.OpenRegisterModal = true;
+                TempData["RegisterError"] = "This email is already registered.";
+                TempData["OpenRegisterModal"] = true;
                 return RedirectToAction("Index", "Home");
             }
 
             if (user.Password != user.ConfirmPassword)
             {
-                ModelState.AddModelError("ConfirmPassword", "Password and Confirm Password must match.");
-                ViewBag.OpenRegisterModal = true;
+                TempData["RegisterError"] = "Password and Confirm Password must match.";
+                TempData["OpenRegisterModal"] = true;
                 return RedirectToAction("Index", "Home");
             }
 
-
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                var passwordHasher = new PasswordHasher<User>();
-                user.Password = passwordHasher.HashPassword(user, user.Password);
-
-                user.Role = "User";
-                user.Status = "Active";
-                user.JoinedDate = DateTime.Now;
-
-                _context.Users.Add(user);
-                _context.SaveChanges();
-
-                TempData["SuccessMessage"] = "Your account has been registered successfully!";
-
+                TempData["RegisterError"] = "Please fill in all required fields.";
+                TempData["OpenRegisterModal"] = true;
                 return RedirectToAction("Index", "Home");
             }
 
-           
-            ViewBag.OpenRegisterModal = true;
-            return RedirectToAction("Index", "Home");
+            var passwordHasher = new PasswordHasher<User>();
+            user.Password = passwordHasher.HashPassword(user, user.Password);
 
+            user.Role = "User";
+            user.Status = "Active";
+            user.JoinedDate = DateTime.Now;
+
+            _context.Users.Add(user);
+            _context.SaveChanges();
+
+            TempData["SuccessMessage"] = "Your account has been registered successfully!";
+            return RedirectToAction("Index", "Home");
         }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
