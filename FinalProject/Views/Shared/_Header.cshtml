@@ -1,0 +1,101 @@
+﻿@* _Header.cshtml *@
+@{
+    var username = Context.Session.GetString("Username");
+    var userRole = Context.Session.GetString("UserRole");
+}
+
+<div class="shadow-sm bg-white">
+    <div class="container py-3">
+        <div class="d-flex justify-content-between align-items-center">
+
+       
+            <a class="btn p-0 d-flex align-items-center gap-2 text-decoration-none" asp-controller="Home" asp-action="Index" aria-label="Recipe Haven Home">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="logo-icon" aria-hidden="true" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 21a1 1 0 0 0 1-1v-5.35c0-.457.316-.844.727-1.041a4 4 0 0 0-2.134-7.589 5 5 0 0 0-9.186 0 4 4 0 0 0-2.134 7.588c.411.198.727.585.727 1.041V20a1 1 0 0 0 1 1Z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 17h12" />
+                </svg>
+                <span class="fw-semibold text-orange-600">Recipe Haven</span>
+            </a>
+
+        
+            <nav class="d-flex align-items-center gap-3">
+                <a asp-controller="Home" asp-action="Index" class="btn btn-browse">Browse</a>
+
+
+                @if (!string.IsNullOrEmpty(username)) 
+                {
+                    <form asp-action="UploadRecipe" asp-controller="Home" method="post">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn d-flex align-items-center gap-2 px-4 py-2 rounded-lg text-secondary"
+                                style="background-color: transparent; border: none; transition: background-color 0.3s;"
+                                onmouseover="this.style.backgroundColor='rgba(248, 249, 250, 0.7)';"
+                                onmouseout="this.style.backgroundColor='transparent';">
+                            <i class="bi bi-upload w-4 h-4"></i> Upload Recipe
+                        </button>
+                    </form>
+
+                    @* <button type="button" class="btn d-flex align-items-center gap-2 px-4 py-2 rounded-lg text-secondary"
+                            style="background-color: transparent; border: none; transition: background-color 0.3s;"
+                            onmouseover="this.style.backgroundColor='rgba(248, 249, 250, 0.7)';"
+                            onmouseout="this.style.backgroundColor='transparent';">
+                        <i class="bi bi-heart w-4 h-4"></i> My Favorites
+                    </button> *@
+
+                    <a asp-controller="Home" asp-action="MyFavorites"
+                       class="text-decoration-none">
+                        <button type="button"
+                                class="btn d-flex align-items-center gap-2 px-4 py-2 rounded-lg text-secondary"
+                                style="background-color: transparent; border: none; transition: background-color 0.3s;"
+                                onmouseover="this.style.backgroundColor='rgba(248, 249, 250, 0.7)';"
+                                onmouseout="this.style.backgroundColor='transparent';">
+                            <i class="bi bi-heart"></i> My Favorites
+                        </button>
+                    </a>
+
+                    @if (userRole == "Admin")
+                    {
+                        <a asp-controller="Admin" asp-action="Index" class="text-decoration-none">
+                            <button type="button"
+                                    class="btn d-flex align-items-center gap-2 px-4 py-2 rounded-lg text-warning"
+                                    style="background-color: rgba(255, 193, 7, 0.2); border: none; transition: background-color 0.3s;"
+                                    onmouseover="this.style.backgroundColor='rgba(255, 193, 7, 0.3)';"
+                                    onmouseout="this.style.backgroundColor='rgba(255, 193, 7, 0.2)';">
+                                <i class="bi bi-shield-check"></i> Admin
+                            </button>
+                        </a>
+                    }
+
+                    <span class="fw-semibold text-secondary">@username</span>
+
+                    <form method="post" asp-controller="Account" asp-action="Logout" class="d-inline">
+                        <button type="submit" class="btn d-flex align-items-center gap-2 px-4 py-2 rounded-lg text-danger"
+                                style="background-color: rgba(220, 53, 69, 0.2); border: none; transition: background-color 0.3s;"
+                                onmouseover="this.style.backgroundColor='rgba(220, 53, 69, 0.3)';"
+                                onmouseout="this.style.backgroundColor='rgba(220, 53, 69, 0.2)';">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-right" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M10 15a.5.5 0 0 1-.5-.5V13H5.5A1.5 1.5 0 0 1 4 11.5v-7A1.5 1.5 0 0 1 5.5 3H9.5V1.5a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5z" />
+                                <path fill-rule="evenodd" d="M15.354 8.354a.5.5 0 0 1 0-.708L12.172 4.464a.5.5 0 1 1 .707-.707l3.182 3.182a.5.5 0 0 1 0 .708l-3.182 3.182a.5.5 0 0 1-.707-.707l3.182-3.182z" />
+                            </svg>
+                            Logout
+                        </button>
+                    </form>
+                }
+                else
+                {
+                 
+                    <button type="button" class="btn btn-login" data-bs-toggle="modal" data-bs-target="#loginModal">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m10 17 5-5-5-5"></path>
+                            <path d="M15 12H3"></path>
+                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                        </svg>
+                        Login
+                    </button>
+                }
+            </nav>
+
+        </div>
+    </div>
+</div>
+
+                    

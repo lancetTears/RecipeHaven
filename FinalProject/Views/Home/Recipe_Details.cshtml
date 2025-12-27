@@ -1,0 +1,540 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+
+@model FinalProject.Models.UserAndRecipesViewModel
+
+<main class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+        
+          <a asp-controller="Home" asp-action="Index" class="btn btn-link text-gray-600 mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="bi bi-chevron-left" aria-hidden="true">
+                <path d="m15 18-6-6 6-6"></path>
+            </svg>
+            Back to recipes
+         </a>
+
+         
+            <div class="card shadow-lg rounded-3">
+                <!-- Image and Category Badge -->
+                <div class="position-relative">
+                    @* <img src="@Url.Content("~/" + Model.Recipe.ImageUrl)" 
+                            alt="@Model.Recipe.Name" class="card-img-top"> *@
+                    @* <img src="@Model.Recipe.ImageUrl" alt="@Model.Recipe.Name" class="card-img-top"> *@
+                    <img src="@Url.Content(Model.Recipe.ImageUrl.StartsWith("/") ? Model.Recipe.ImageUrl : "/" + Model.Recipe.ImageUrl)" 
+                        alt="@Model.Recipe.Name" class="card-img-top">
+                    <div class="position-absolute top-0 left-0 p-2">
+                        <span class="badge bg-orange">@Model.Recipe.Category.Name</span>
+                    </div>
+                </div>
+
+            
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <h1 class="flex-grow-1">@Model.Recipe.Name</h1>                      
+                        <button class="btn btn-light rounded-circle p-3"
+                                onclick="toggleFavorite(@Model.Recipe.Id, this)">
+                            @{
+                                var isFavorite = Model.User?.FavoriteRecipes?.Any(f => f.RecipeId == Model.Recipe.Id) == true;
+                                var heartClass = isFavorite ? "text-danger" : "text-secondary";
+                            }
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                 fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                 stroke-linejoin="round" class="@heartClass" aria-hidden="true">
+                                <path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <p class="text-muted mb-4">@Model.Recipe.Description</p>
+
+            
+                    <div class="d-flex gap-4 mb-4">
+                        <div class="d-flex align-items-center text-muted">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="bi bi-clock" aria-hidden="true">
+                                <path d="M12 6v6l4 2"></path>
+                                <circle cx="12" cy="12" r="10"></circle>
+                            </svg>
+                            <span>Prep: @Model.Recipe.PrepTime min</span>
+                        </div>
+                        <div class="d-flex align-items-center text-muted">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="bi bi-clock" aria-hidden="true">
+                                <path d="M12 6v6l4 2"></path>
+                                <circle cx="12" cy="12" r="10"></circle>
+                            </svg>
+                            <span>Cook: @Model.Recipe.CookTime min</span>
+                        </div>
+                        <div class="d-flex align-items-center text-muted">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="bi bi-person" aria-hidden="true">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                                <path d="M16 3.128a4 4 0 0 1 0 7.744"></path>
+                                <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                            </svg>
+                            <span>@Model.Recipe.Servings servings</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-4 mb-4">
+                        <button class="btn @(Model.Recipe.IsLikedByUser ? "btn-primary" : "btn-outline-secondary") d-flex align-items-center gap-2"
+                                onclick="toggleLike(@Model.Recipe.Id, this)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="bi bi-heart" aria-hidden="true">
+                                <path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"></path>
+                            </svg>
+                            <span>@Model.Recipe.LikesCount Likes</span>
+                        </button>
+                        <button class="btn btn-warning d-flex align-items-center gap-2"
+                                @if (Model.User == null)
+                                {
+                                    @:onclick="showLoginAlert(event)"
+                                }
+                                else
+                                {
+                                    @:data-bs-toggle="modal" data-bs-target="#rateRecipeModal"
+                                }
+>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="bi bi-star" aria-hidden="true">
+                                <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
+                            </svg>
+                            <span>Rate Recipe</span>
+                        </button>
+
+                        <div class="d-flex align-items-center gap-2 text-muted">
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                 width="20" height="20"
+                                 viewBox="0 0 24 24"
+                                 fill="currentColor"
+                                 stroke="currentColor"
+                                 stroke-width="2"
+                                 stroke-linecap="round"
+                                 stroke-linejoin="round"
+                                 class="text-warning"
+                                 aria-hidden="true">
+                                <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
+                            </svg>
+
+                            <span id="avg-rating">@Model.Recipe.AverageRating.ToString("0.0") ⭐ @if (ViewBag.RatingCount != null && ViewBag.RatingCount > 0) { <text>(<span id="rating-count">@ViewBag.RatingCount</span> ratings)</text> }</span>
+                        </div>
+
+                    </div>
+
+                  <h2 class="mb-3">Ingredients</h2>
+                    <ul class="list-group mb-4">
+                        @foreach(var ingredient in Model.Recipe.Ingredients)
+                        {
+                            <li class="list-group-item d-flex align-items-center gap-3">
+                                <span class="badge rounded-circle bg-orange" style="width: 12px; height: 12px;"></span>
+                                @ingredient
+                            </li> 
+                        }
+                    </ul>
+
+                    
+                    <h2 class="mb-3">Instructions</h2>
+                    <ol class="list-group list-group-numbered">
+                        @foreach(var instruction in Model.Recipe.Instructions)
+                        {
+                            <li class="list-group-item">
+                                @instruction 
+                            </li>
+                        }
+                    </ol>
+
+                  
+                    <div class="border-top pt-4">
+                        <h4>Comments (<span id="comment-count">@Model.Recipe.Comments.Count</span>)</h4>
+                        @if (Model.User != null)
+                        {
+                            <div class="mb-4">
+                                <textarea id="commentText" class="form-control mb-2" placeholder="Share your thoughts about this recipe..." rows="3"></textarea>
+                                <button class="btn btn-warning" onclick="postComment(@Model.Recipe.Id)">Post Comment</button>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-info">
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Login</a> to post a comment.
+
+                            </div>
+                        }
+
+                        <div id="comments-container">
+                            @foreach (var comment in Model.Recipe.Comments.OrderByDescending(c => c.DatePosted))
+                            {
+                                <div class="bg-light p-3 mb-3 rounded">
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-dark fw-semibold">@comment.UserName</span>
+                                        <span class="text-muted small">@comment.DatePosted.ToString("yyyy-MM-dd")</span>
+                                    </div>
+                                    <p class="text-muted mb-0">@comment.Content</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="rateRecipeModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4">
+
+           
+                <div class="modal-header">
+                    <h5 class="modal-title">Rate this Recipe</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+             
+                <div class="modal-body text-center">
+                    <div class="d-flex justify-content-center gap-2 mb-3" id="rating-stars-container">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            <button class="btn btn-link p-0 rating-star" data-rating="@i">
+                                <i class="bi bi-star fs-2 text-secondary"></i>
+                            </button>
+                        }
+                    </div>
+                    <p class="text-muted" id="rating-text">Click on a star to rate</p>
+                </div>
+
+            
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary"
+                            data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                    <button type="button" class="btn btn-warning" id="submitRatingBtn">
+                        Submit Rating
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5>Login</h5>
+                    <button type="button" class="btn btn-light p-1 rounded-circle" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+                <form method="post" asp-controller="Account" asp-action="Login">
+                    <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
+                    <div class="mb-3">
+                        <label>Email</label>
+                        <input type="email" name="email" id="email" class="form-control" required />
+                        <span asp-validation-for="User.Email" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label>Password</label>
+                        <input type="password" name="password" id="password" class="form-control" required />
+                        <span asp-validation-for="User.Password" class="text-danger"></span>
+                    </div>
+                    @if (TempData["LoginErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            @TempData["LoginErrorMessage"]
+                        </div>
+                    }
+                    <button type="submit" class="btn btn-login w-100 mt-3">Login</button>
+                </form>
+                <button class="btn btn-outline-warning mt-3 w-100" data-bs-toggle="modal" data-bs-target="#signupModal" data-bs-dismiss="modal">Sign Up</button>
+                <div class="mt-4 p-3 bg-info bg-opacity-10 rounded">
+                    <p class="small mb-0">
+                        <strong>Guest Mode:</strong> Browse and search without logging in. Login to like, rate, comment, and upload recipes!
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div class="modal fade" id="signupModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5>Sign Up</h5>
+                    <button type="button" class="btn btn-light p-1 rounded-circle" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+
+                <form method="post" asp-controller="Account" asp-action="Register">
+                    <div class="mb-3">
+                        <label>Name</label>
+                        <input asp-for="User.Name" class="form-control" />
+                        <span asp-validation-for="User.Name" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Email</label>
+                        <input asp-for="User.Email" class="form-control" />
+                        <span asp-validation-for="User.Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Password</label>
+                        <input asp-for="User.Password" type="password" class="form-control" />
+                        <span asp-validation-for="User.Password" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Confirm Password</label>
+                        <input asp-for="User.ConfirmPassword" type="password" class="form-control" />
+                        <span asp-validation-for="User.ConfirmPassword" class="text-danger"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-signup w-100 mt-3">Sign Up</button>
+                </form>
+
+                <div class="text-center mt-2">
+                    <button class="btn btn-link text-warning p-0" data-bs-toggle="modal" data-bs-target="#loginModal" data-bs-dismiss="modal">
+                        Already have an account? Login
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</main>
+<script>
+    
+    function toggleFavorite(recipeId, btn) {
+        fetch('/Home/ToggleFavorite', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ recipeId: recipeId })
+        })
+        .then(response => {
+            if (response.ok) {
+                const svg = btn.querySelector('svg');
+                if (svg) {
+                    svg.classList.toggle('text-danger');
+                    svg.classList.toggle('text-secondary');
+                }
+            } else if (response.status === 401) {
+                alert('You need to log in to favorite recipes.');
+            } else {
+                alert('Something went wrong.');
+            }
+        });
+    }
+    function toggleLike(recipeId, btn) {
+        fetch('/Home/ToggleLike', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ recipeId: recipeId })
+        })
+        .then(response => {
+            if (response.status === 401) {
+                alert('You need to log in to like recipes.');
+                return;
+            }
+            if (!response.ok) {
+                alert('Something went wrong.');
+                return;
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (!data) return;
+            const span = btn.querySelector('span');
+            span.textContent = `${data.likesCount} Likes`;
+
+          
+            if (data.isLiked) {
+                btn.classList.add('btn-primary');
+                btn.classList.remove('btn-outline-secondary');
+            } else {
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-outline-secondary');
+            }
+
+        });
+    }
+
+    let selectedRating = 0;
+
+    const ratingLabels = ["Poor", "Fair", "Good", "Very good", "Excellent"];
+
+    function getSelectedRating() {
+        return selectedRating;
+    }
+
+    function resetRatingModal() {
+        selectedRating = 0;
+        const ratingStars = document.querySelectorAll(".rating-star");
+        const ratingText = document.getElementById("rating-text");
+        ratingText.textContent = "Click on a star to rate";
+        ratingStars.forEach(s => {
+            const icon = s.querySelector("i");
+            icon.classList.remove("text-warning");
+            icon.classList.add("text-secondary");
+        });
+    }
+
+    function setupRatingStars() {
+        const ratingStars = document.querySelectorAll(".rating-star");
+        const ratingText = document.getElementById("rating-text");
+
+        ratingStars.forEach(star => {
+            star.addEventListener("click", () => {
+                selectedRating = parseInt(star.dataset.rating);
+
+                // Update star display
+                ratingStars.forEach(s => {
+                    const sRating = parseInt(s.dataset.rating);
+                    const icon = s.querySelector("i");
+                    if (sRating <= selectedRating) {
+                        icon.classList.remove("text-secondary");
+                        icon.classList.add("text-warning");
+                    } else {
+                        icon.classList.remove("text-warning");
+                        icon.classList.add("text-secondary");
+                    }
+                });
+
+                // Update rating text
+                ratingText.textContent = ratingLabels[selectedRating - 1];
+            });
+        });
+    }
+
+    // Initialize rating stars on page load
+    setupRatingStars();
+
+    // Reset modal when it's closed
+    const rateRecipeModal = document.getElementById('rateRecipeModal');
+    if (rateRecipeModal) {
+        rateRecipeModal.addEventListener('hidden.bs.modal', function () {
+            resetRatingModal();
+        });
+    }
+
+    const submitRatingBtn = document.getElementById("submitRatingBtn");
+
+    submitRatingBtn.addEventListener("click", () => {
+        const rating = getSelectedRating();
+
+        if (!rating || rating === 0) {
+            alert("Please select a rating before submitting.");
+            return;
+        }
+
+        fetch('/Home/RateRecipe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                recipeId: @Model.Recipe.Id, 
+                rating: rating               
+            })
+        })
+        .then(res => {
+            if (!res.ok) {
+                return res.json().then(data => {
+                    alert(data.message || "An error occurred.");
+                });
+            }
+            return res.json();
+        })
+        .then(data => {
+            if (data && data.averageRating !== undefined) {
+                const avgRating = data.averageRating;
+                document.getElementById("avg-rating").innerHTML = `${avgRating.toFixed(1)} ⭐`;
+                
+                
+                const modalElement = document.getElementById('rateRecipeModal');
+                const modal = bootstrap.Modal.getInstance(modalElement);
+                if (modal) {
+                    modal.hide();
+                }
+                
+                // Refresh
+                window.location.reload();
+            }
+        })
+        .catch(err => {
+            alert("Something went wrong while submitting your rating.");
+            console.error(err);  
+        });
+    });
+
+    function showLoginAlert(event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        alert("You have to log in to rate this recipe. Please log in first.");
+        
+        // Optionally open the login modal after alert
+        const loginModal = document.getElementById('loginModal');
+        if (loginModal) {
+            const modal = new bootstrap.Modal(loginModal);
+            modal.show();
+        }
+    }
+
+    function postComment(recipeId) {
+        const commentText = document.getElementById("commentText").value.trim();
+        if (!commentText) {
+            alert("Please enter a comment.");
+            return;
+        }
+
+        fetch('/Home/PostComment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                recipeId: recipeId,
+                content: commentText
+            })
+        })
+        .then(res => {
+            if (!res.ok) {
+                return res.json().then(data => {
+                    alert(data.message || "An error occurred.");
+                });
+            }
+            return res.json();
+        })
+        .then(data => {
+            if (data) {
+                // Add the new comment to the page
+                const commentsContainer = document.getElementById("comments-container");
+                const commentDiv = document.createElement("div");
+                commentDiv.className = "bg-light p-3 mb-3 rounded";
+                commentDiv.innerHTML = `
+                    <div class="d-flex justify-content-between">
+                        <span class="text-dark fw-semibold">${data.userName}</span>
+                        <span class="text-muted small">${data.datePosted}</span>
+                    </div>
+                    <p class="text-muted mb-0">${data.content}</p>
+                `;
+                commentsContainer.insertBefore(commentDiv, commentsContainer.firstChild);
+                
+                // Update comment count
+                const countElement = document.getElementById("comment-count");
+                countElement.textContent = parseInt(countElement.textContent) + 1;
+                
+                // Clear the textarea
+                document.getElementById("commentText").value = "";
+            }
+        })
+        .catch(err => {
+            alert("Something went wrong while posting your comment.");
+            console.error(err);
+        });
+    }
+
+    // Handle login modal opening from TempData
+    document.addEventListener("DOMContentLoaded", function() {
+        var openLoginModal = @((TempData["OpenLoginModal"] != null && (bool)TempData["OpenLoginModal"]).ToString().ToLower());
+        if (openLoginModal) {
+            var loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+            loginModal.show();
+        }
+    });
+</script>

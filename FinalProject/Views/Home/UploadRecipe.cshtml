@@ -1,0 +1,171 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    ViewBag.Title = "Upload Recipe";
+}
+
+@model FinalProject.Models.RecipeViewModel
+
+<main class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm p-4">
+                <div class="d-flex align-items-center mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-upload me-2" viewBox="0 0 16 16">
+                        <path d="M.5 9.9a.5.5 0 0 1 .5-.5h3v-5h4v5h3a.5.5 0 0 1 0 1h-3v5H4v-5h-3a.5.5 0 0 1-.5-.5z" />
+                    </svg>
+                    <h1 class="h4 mb-0">Upload Your Recipe</h1>
+                </div>
+
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        @TempData["SuccessMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                <form asp-action="UploadRecipe" asp-controller="Home" method="post" id="recipeForm" onsubmit="return confirm('Are you sure you want to add this recipe?');" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label">Recipe Title</label>
+                        <input asp-for="Name" class="form-control" placeholder="e.g., Homemade Spaghetti Bolognese" required />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+
+                  
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label">Description</label>
+                        <textarea asp-for="Description" class="form-control" rows="3" placeholder="Describe your recipe..." required></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Recipe Image (optional)</label>
+                        <input type="file" class="form-control" name="ImageFile" accept="image/*" />
+                    </div>
+
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="CategoryId" class="form-label">Category</label>
+                            <select asp-for="CategoryId" class="form-select"
+                                    asp-items="@(new SelectList(ViewBag.Categories, "Id", "Name"))">
+                                <option value="">-- Select Category --</option>
+                            </select>
+                            <span asp-validation-for="CategoryId" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Servings" class="form-label">Servings</label>
+                            <input asp-for="Servings" type="number" class="form-control" min="1" required />
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="PrepTime" class="form-label">Prep Time</label>
+                            <input asp-for="PrepTime" type="text" class="form-control" placeholder="e.g., 15 min" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="CookTime" class="form-label">Cook Time</label>
+                            <input asp-for="CookTime" type="text" class="form-control" placeholder="e.g., 30 min" required />
+                        </div>
+                    </div>
+
+                    <!-- Ingredients -->
+                    <div class="mb-3">
+                        <label class="form-label">Ingredients</label>
+                        <div class="input-group mb-2">
+                            <input type="text" class="form-control" id="ingredientInput" placeholder="Add an ingredient..." />
+                            <button type="button" class="btn btn-warning" id="addIngredient">+</button>
+                        </div>
+                        <ul class="list-group mb-2" id="ingredientList"></ul>
+                        <input type="hidden" name="Ingredients" id="IngredientsHidden" />
+                    </div>
+
+                    <!-- Instructions -->
+                    <div class="mb-3">
+                        <label class="form-label">Instructions</label>
+                        <div class="input-group mb-2">
+                            <textarea class="form-control" id="instructionInput" rows="2" placeholder="Add a cooking step..."></textarea>
+                            <button type="button" class="btn btn-warning" id="addInstruction">+</button>
+                        </div>
+                        <ul class="list-group mb-2" id="instructionList"></ul>
+                        <input type="hidden" name="Instructions" id="InstructionsHidden" />
+                    </div>          
+
+                    <button type="submit" class="btn btn-warning w-100">Upload Recipe</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+@section Scripts {
+    <script>
+
+        const ingredientInput = document.getElementById('ingredientInput');
+        const ingredientList = document.getElementById('ingredientList');
+        const ingredientsHidden = document.getElementById('IngredientsHidden');
+        const ingredients = [];
+
+        document.getElementById('addIngredient').addEventListener('click', () => {
+            const value = ingredientInput.value.trim();
+            if (!value) return;
+            ingredients.push(value);
+            updateIngredientList();
+            ingredientInput.value = '';
+        });
+
+        function updateIngredientList() {
+            ingredientList.innerHTML = '';
+            ingredients.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.className = "list-group-item d-flex justify-content-between align-items-center";
+                li.textContent = item;
+                const btn = document.createElement('button');
+                btn.type = "button";
+                btn.className = "btn btn-sm btn-outline-secondary";
+                btn.textContent = "X";
+                btn.onclick = () => { ingredients.splice(index, 1); updateIngredientList(); };
+                li.appendChild(btn);
+                ingredientList.appendChild(li);
+            });
+            ingredientsHidden.value = ingredients.join("|||");
+
+        }
+
+    
+        const instructionInput = document.getElementById('instructionInput');
+        const instructionList = document.getElementById('instructionList');
+        const instructionsHidden = document.getElementById('InstructionsHidden');
+        const instructions = [];
+
+        document.getElementById('addInstruction').addEventListener('click', () => {
+            const value = instructionInput.value.trim();
+            if (!value) return;
+            instructions.push(value);
+            updateInstructionList();
+            instructionInput.value = '';
+        });
+
+        function updateInstructionList() {
+            instructionList.innerHTML = '';
+            instructions.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.className = "list-group-item d-flex justify-content-between align-items-start";
+                li.innerHTML = `<span>${item}</span>`;
+                const btn = document.createElement('button');
+                btn.type = "button";
+                btn.className = "btn btn-sm btn-outline-secondary";
+                btn.textContent = "X";
+                btn.onclick = () => { instructions.splice(index, 1); updateInstructionList(); };
+                li.appendChild(btn);
+                instructionList.appendChild(li);
+            });
+           instructionsHidden.value = instructions.join("|||");
+
+        }
+    </script>
+}

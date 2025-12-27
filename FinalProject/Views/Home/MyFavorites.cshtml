@@ -1,0 +1,162 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+@model FinalProject.Models.UserAndRecipesViewModel
+<main class="container py-4 px-3">
+    <div class="mx-auto" style="max-width: 1200px;">
+
+       
+        <div class="bg-white rounded-4 shadow-lg p-4 mb-4">
+            <div class="d-flex align-items-center gap-3 mb-4">
+
+           
+                <div class="d-flex justify-content-center align-items-center rounded-circle"
+                     style="width:64px;height:64px;background:#f97316;color:white;">
+                    <span style="font-size:1.5rem;">F</span>
+                </div>
+
+                <div>
+                    <h1 class="m-0 fs-3">Food Lover</h1>
+                    <p class="text-muted m-0">admin@gmail.com</p>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-4 pt-4 border-top">
+                <div class="d-flex align-items-center gap-2">
+                    <svg width="24" height="24" fill="none" stroke="currentColor"
+                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                         class="text-danger">
+                        <path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5">
+                        </path>
+                    </svg>
+                    <span class="text-secondary">@Model.Recipes.Count Favorites</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <h2>My Favorite Recipes</h2>
+        </div>
+
+        @if (Model.Recipes.Any())
+        {
+            <div class="row g-4">
+                @foreach (var recipe in Model.Recipes)
+                {
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="card recipe-card h-100 overflow-hidden position-relative">
+
+                          
+                            <a asp-action="Recipe_Details" asp-route-id="@recipe.Id" class="d-block">
+                                <img src="@recipe.ImageUrl" class="card-img-top recipe-img" style="height:200px; object-fit:cover;" />
+                            </a>
+
+                          
+                            <div class="position-absolute top-0 start-0 w-100 d-flex justify-content-between p-2">
+                                <span class="badge rounded-pill bg-warning text-white"
+                                      style="height: 1.8rem; line-height: 1.8rem; padding: 0 0.75rem; font-size: 0.85rem; display: inline-block;">
+                                    @recipe.Category.Name
+                                </span>
+
+                                <button type="button" class="btn p-2 rounded-circle"
+                                        style="background-color: rgba(255,255,255,0.9);"
+                                        onclick="toggleFavorite(@recipe.Id, this)">
+
+                                    @{
+                                        var isFavorite = Model.User?.FavoriteRecipes?.Any(f => f.RecipeId == recipe.Id) == true;
+                                        var heartClass = isFavorite ? "text-danger" : "text-secondary";
+                                    }
+
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                         class="w-5 h-5 @heartClass">
+                                        <path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"></path>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <a asp-action="Recipe_Details" asp-route-id="@recipe.Id" class="text-decoration-none text-dark">
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title text-truncate">@recipe.Name</h5>
+                                    <p class="card-text text-truncate-2">@recipe.Description</p>
+                                    <div class="d-flex justify-content-between text-muted small">
+                                        <div><i class="bi bi-clock"></i>@recipe.PrepTime min</div>
+                                        <div><i class="bi bi-people"></i>@recipe.Servings servings</div>
+                                    </div>
+                                </div>
+                            </a>
+
+                        </div>
+                    </div>
+                }
+            </div>
+
+        }
+        else
+        {
+            <div class="bg-white rounded-4 shadow p-5 text-center">
+                <svg width="64" height="64" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="text-secondary mb-3">
+                    <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2Z"></path>
+                    <path d="m9 10 2 2 4-4"></path>
+                </svg>
+                <h3 class="text-muted mb-2">No favorites yet</h3>
+                <p class="text-secondary">
+                    Start exploring recipes and click the heart icon to save your favorites
+                </p>
+            </div>
+        }
+        </div>
+</main>
+<script>
+       function toggleFavorite(recipeId, btn) {
+        fetch('/Home/ToggleFavorite', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ recipeId: recipeId })
+        })
+        .then(response => {
+            if (response.ok) {
+                const svg = btn.querySelector('svg');
+                if (svg) {
+                    svg.classList.toggle('text-danger');
+                    svg.classList.toggle('text-secondary');
+                }
+
+       
+                if (window.location.pathname.includes('MyFavorites')) {
+                    const col = btn.closest('.col-12.col-md-6.col-lg-4');
+                    if (col) col.remove();
+
+                    const container = document.querySelector('.row.g-4');
+                    if (container && container.children.length === 0) {
+                        const emptyHtml = `
+                            <div class="bg-white rounded-4 shadow p-5 text-center">
+                                <svg width="64" height="64" fill="none" stroke="currentColor"
+                                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                     class="text-secondary mb-3">
+                                    <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2Z"></path>
+                                    <path d="m9 10 2 2 4-4"></path>
+                                </svg>
+                                <h3 class="text-muted mb-2">No favorites yet</h3>
+                                <p class="text-secondary">
+                                    Start exploring recipes and click the heart icon to save your favorites
+                                </p>
+                            </div>`;
+                        container.insertAdjacentHTML('beforebegin', emptyHtml);
+                        container.remove(); 
+                    }
+                }
+            } else if (response.status === 401) {
+                alert('You need to log in to favorite recipes.');
+            } else {
+                alert('Something went wrong.');
+            }
+        });
+    }
+</script>
+
+
