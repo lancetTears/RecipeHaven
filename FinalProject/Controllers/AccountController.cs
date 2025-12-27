@@ -25,14 +25,14 @@ namespace FinalProject.Controllers
             {
                 ModelState.AddModelError("Email", "This email is already registered.");
                 ViewBag.OpenRegisterModal = true;
-                return View("~/Views/Home/Index.cshtml", user);
+                return RedirectToAction("Index", "Home");
             }
 
             if (user.Password != user.ConfirmPassword)
             {
                 ModelState.AddModelError("ConfirmPassword", "Password and Confirm Password must match.");
                 ViewBag.OpenRegisterModal = true;
-                return View("~/Views/Home/Index.cshtml", user);
+                return RedirectToAction("Index", "Home");
             }
 
 
@@ -55,7 +55,7 @@ namespace FinalProject.Controllers
 
            
             ViewBag.OpenRegisterModal = true;
-            return View("~/Views/Home/Index.cshtml", user);
+            return RedirectToAction("Index", "Home");
 
         }
 
